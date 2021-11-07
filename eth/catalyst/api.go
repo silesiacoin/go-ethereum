@@ -314,6 +314,7 @@ func (api *ConsensusAPI) assembleBlock(parentHash common.Hash, params *PayloadAt
 		GasLimit:   parent.GasLimit(), // Keep the gas limit constant in this prototype
 		Extra:      []byte{},          // TODO (MariusVanDerWijden) properly set extra data
 		Time:       params.Timestamp,
+		MixDigest:  params.Random,
 	}
 	if config := api.eth.BlockChain().Config(); config.IsLondon(header.Number) {
 		header.BaseFee = misc.CalcBaseFee(config, parent.Header())
@@ -428,6 +429,7 @@ func ExecutableDataToBlock(params ExecutableDataV1) (*types.Block, error) {
 		Time:        params.Timestamp,
 		BaseFee:     params.BaseFeePerGas,
 		Extra:       params.ExtraData,
+		MixDigest:   params.Random,
 		// TODO (MariusVanDerWijden) add params.Random to header once required
 	}
 	block := types.NewBlockWithHeader(header).WithBody(txs, nil /* uncles */)
