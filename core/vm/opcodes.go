@@ -278,7 +278,7 @@ var opCodeToString = map[OpCode]string{
 	COINBASE:    "COINBASE",
 	TIMESTAMP:   "TIMESTAMP",
 	NUMBER:      "NUMBER",
-	DIFFICULTY:  "DIFFICULTY",
+	DIFFICULTY:  "DIFFICULTY", // TODO (MariusVanDerWijden) rename to RANDOM post merge
 	GASLIMIT:    "GASLIMIT",
 	CHAINID:     "CHAINID",
 	SELFBALANCE: "SELFBALANCE",
