@@ -31,6 +31,7 @@ type Config struct {
 	Tracer                  EVMLogger // Opcode logger
 	NoRecursion             bool      // Disables call, callcode, delegate call and create
 	NoBaseFee               bool      // Forces the EIP-1559 baseFee to 0 (needed for 0 price calls)
+	RandomOpcode            bool      // Enables the random opcode
 	EnablePreimageRecording bool      // Enables recording of SHA3/keccak preimages
 
 	JumpTable [256]*operation // EVM instruction table, automatically populated if unset

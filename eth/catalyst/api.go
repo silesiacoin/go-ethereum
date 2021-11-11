@@ -133,6 +133,7 @@ type blockExecutionEnv struct {
 
 func (env *blockExecutionEnv) commitTransaction(tx *types.Transaction, coinbase common.Address) error {
 	vmconfig := *env.chain.GetVMConfig()
+	vmconfig.RandomOpcode = true
 	snap := env.state.Snapshot()
 	receipt, err := core.ApplyTransaction(env.chain.Config(), env.chain, &coinbase, env.gasPool, env.state, env.header, tx, &env.header.GasUsed, vmconfig)
 	if err != nil {
@@ -272,6 +273,9 @@ func (api *ConsensusAPI) ExecutePayloadV1(params ExecutableDataV1) (ExecutePaylo
 	if td.Cmp(ttd) < 0 {
 		return api.invalid(), fmt.Errorf("can not execute payload on top of block with low td got: %v threshold %v", td, ttd)
 	}
+	conf := api.eth.BlockChain().GetVMConfig()
+	conf.RandomOpcode = true
+	api.eth.BlockChain().SetVMConfig(*conf)
 	if err := api.eth.BlockChain().InsertBlockWithoutSetHead(block); err != nil {
 		return api.invalid(), err
 	}
@@ -316,6 +320,9 @@ func (api *ConsensusAPI) assembleBlock(parentHash common.Hash, params *PayloadAt
 		Time:       params.Timestamp,
 		MixDigest:  params.Random,
 	}
+	conf := api.eth.BlockChain().GetVMConfig()
+	conf.RandomOpcode = true
+	api.eth.BlockChain().SetVMConfig(*conf)
 	if config := api.eth.BlockChain().Config(); config.IsLondon(header.Number) {
 		header.BaseFee = misc.CalcBaseFee(config, parent.Header())
 	}
