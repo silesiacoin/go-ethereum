@@ -35,6 +35,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/eth"
+	"github.com/ethereum/go-ethereum/eth/downloader"
 	"github.com/ethereum/go-ethereum/les"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/node"
@@ -260,7 +261,7 @@ func (api *ConsensusAPI) ExecutePayloadV1(params ExecutableDataV1) (ExecutePaylo
 	if !api.eth.BlockChain().HasBlock(block.ParentHash(), block.NumberU64()-1) {
 
 		//TODO (MariusVanDerWijden) reenable once sync is merged
-		if err := api.eth.Downloader().BeaconSync(api.eth.SyncMode(), block.Header()); err != nil {
+		if err := api.eth.Downloader().BeaconSync(downloader.FullSync, block.Header()); err != nil {
 			return ExecutePayloadResponse{Status: SYNCING.Status, LatestValidHash: common.Hash{}}, err
 		}
 
