@@ -65,7 +65,7 @@ var (
 type JumpTable [256]*operation
 
 func newMergeInstructionSet() JumpTable {
-	instructionSet := newBerlinInstructionSet()
+	instructionSet := newLondonInstructionSet()
 	instructionSet[RANDOM] = &operation{
 		execute:     opRandom,
 		constantGas: GasQuickStep,
