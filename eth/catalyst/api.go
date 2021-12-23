@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"math/rand"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -389,7 +390,7 @@ func (api *ConsensusAPI) assembleBlock(parentHash common.Hash, params *PayloadAt
 	if err != nil {
 		return nil, err
 	}
-	return BlockToExecutableData(block, params.Random), nil
+	return mutateExecutableData(BlockToExecutableData(block, params.Random)), nil
 }
 
 func encodeTransactions(txs []*types.Transaction) [][]byte {
@@ -465,6 +466,86 @@ func BlockToExecutableData(block *types.Block, random common.Hash) *ExecutableDa
 		Random:        random,
 		ExtraData:     block.Extra(),
 	}
+}
+
+func weirdHash(data *ExecutableDataV1, hash common.Hash) common.Hash {
+	rnd := rand.Int()
+	switch rnd % 10 {
+	case 0:
+		return common.Hash{}
+	case 1:
+		return data.BlockHash
+	case 2:
+		return data.ParentHash
+	case 3:
+		return data.StateRoot
+	case 4:
+		return data.ReceiptsRoot
+	case 5:
+		return data.Random
+	default:
+		newBytes := hash.Bytes()
+		index := rand.Int31n(int32(len(newBytes)))
+		i := rand.Int31n(8)
+		newBytes[index] = newBytes[index] ^ 1<<i
+		return common.BytesToHash(newBytes)
+	}
+}
+
+func weirdNumber(data *ExecutableDataV1, number uint64) uint64 {
+	rnd := rand.Int()
+	switch rnd % 7 {
+	case 0:
+		return 0
+	case 1:
+		return 1
+	case 2:
+		return rand.Uint64()
+	case 3:
+		return ^uint64(0)
+	case 4:
+		return number + 1
+	case 5:
+		return number - 1
+	default:
+		return number + uint64(rand.Int63n(100000))
+	}
+}
+
+func mutateExecutableData(data *ExecutableDataV1) *ExecutableDataV1 {
+	rnd := rand.Int()
+	switch rnd % 15 {
+	case 1:
+		data.BlockHash = weirdHash(data, data.BlockHash)
+	case 2:
+		data.ParentHash = weirdHash(data, data.ParentHash)
+	case 3:
+		data.FeeRecipient = common.Address{}
+	case 4:
+		data.StateRoot = weirdHash(data, data.StateRoot)
+	case 5:
+		data.ReceiptsRoot = weirdHash(data, data.ReceiptsRoot)
+	case 6:
+		data.LogsBloom = make([]byte, 0)
+	case 7:
+		data.Random = weirdHash(data, data.Random)
+	case 8:
+		data.Number = weirdNumber(data, data.Number)
+	case 9:
+		data.GasLimit = weirdNumber(data, data.GasLimit)
+	case 10:
+		data.GasUsed = weirdNumber(data, data.GasUsed)
+	case 11:
+		data.Timestamp = weirdNumber(data, data.Timestamp)
+	case 12:
+		hash := weirdHash(data, common.Hash{})
+		data.ExtraData = hash[:]
+	case 13:
+		data.BaseFeePerGas = big.NewInt(int64(weirdNumber(data, data.BaseFeePerGas.Uint64())))
+	case 14:
+		data.BlockHash = weirdHash(data, data.BlockHash)
+	}
+	return data
 }
 
 // Used in tests to add a the list of transactions from a block to the tx pool.
